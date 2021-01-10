@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mxx.blogs.mapper.BlogsUserMapper">
+    <resultMap id="UserMap" type="com.mxx.blogs.pojo.BlogsUser">
+        <id column="user_id" property="userId"></id>
+        <result column="user_name" property="userName" />
+        <result column="pass_word" property="passWord"/>
+        <result column="u_name" property="uName"/>
+        <result column="u_email" property="uEmail"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="state" property="state"/>
+        <result column="retain" property="retain"/>
+        <result column="retain2" property="retain2"/>
+        <result column="retain3" property="retain3"/>
+        <result column="u_image" property="uImage"/>
+    </resultMap>
+    <select id="getUserByName" resultMap="UserMap">
+        select *from blogs_user
+        where user_name = #{username}
+    </select>
+    <insert id="insertIntoUser">
+        insert into blogs_user (user_name,pass_word,u_name,u_image,create_time,state)
+        values (#{user.userName},MD5(#{user.passWord}),#{user.uName},#{user.uImage},#{user.createTime},#{user.state})
+    </insert>
+</mapper>
