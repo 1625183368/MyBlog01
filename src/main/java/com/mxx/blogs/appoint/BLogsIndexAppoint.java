@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Component
-@SuppressWarnings(value = "all")
+
 public class BLogsIndexAppoint {
     @Autowired
     private ArticleMapper articleMapper;

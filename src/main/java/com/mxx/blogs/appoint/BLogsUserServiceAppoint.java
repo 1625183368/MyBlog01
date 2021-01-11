@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 import java.util.Date;
 
 @Component
-@SuppressWarnings(value = "all")
+
 public class BLogsUserServiceAppoint {
     @Autowired
     private BlogsUserMapper blogsUserMapper;
