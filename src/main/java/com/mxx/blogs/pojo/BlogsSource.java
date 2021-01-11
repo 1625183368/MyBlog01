@@ -9,7 +9,4 @@ public class BlogsSource {
   private long blogsSourceId;
   private String souceContent;
 
-
-
-
 }
