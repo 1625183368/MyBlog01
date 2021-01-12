@@ -5,7 +5,7 @@
     <select id="getAll" resultType="com.mxx.blogs.pojo.BlogsSource">
         select * from blogs_source
     </select>
-    <insert id="insertBlogs" parameterType="com.mxx.blogs.pojo.BlogsArticle">
+    <insert id="insertBlogs" parameterType="com.mxx.blogs.pojo.BLogsArticleWithBLOBs">
         insert into blogs_article(show_image,author_number,blogs_title,blogs_content,image_lists,if_public,create_time,update_time,blogs_source,read_size,'like',retain1)
         values (#{a.showImage},#{a.authorNumber},#{a.blogsTitle},#{a.blogsContent},#{a.imageLists},#{a.ifPublic},#{a.createTime},#{a.updateTime},#{a.blogsSource},#{a.readSize},#{a.like} , #{a.retain1})
     </insert>

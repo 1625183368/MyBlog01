@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mxx.blogs.mapper.UserInfoMapper">
+    <select id="getUserInfoByUserName" resultType="com.mxx.blogs.pojo.BlogsUserElseInfo">
+        select * from blogs_user_else_info where retain = #{username}
+    </select>
+    <select id="getSkillValueByUserName" resultType="com.mxx.blogs.pojo.DtoExBlogsSkillValue">
+       select sv.* , bs.skill_key `key` FROM `blogs_skill_value` sv, blogs_skill bs
+       WHERE sv.skill_key_id = bs.skill_id AND user_name = #{username}
+    </select>
+</mapper>

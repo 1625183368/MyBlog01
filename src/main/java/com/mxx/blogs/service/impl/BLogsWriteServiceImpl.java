@@ -3,9 +3,12 @@ package com.mxx.blogs.service.impl;
 
 import com.mxx.blogs.appoint.BLogsWriteAppoint;
 import com.mxx.blogs.contants.ArticleContants;
+import com.mxx.blogs.enums.BlogSysState;
+import com.mxx.blogs.locks.BLogsWriteLock;
 import com.mxx.blogs.mapper.BlogsSourceMapper;
 import com.mxx.blogs.pojo.BLogsArticleWithBLOBs;
 import com.mxx.blogs.pojo.BlogsSource;
+import com.mxx.blogs.pojo.BlogsUser;
 import com.mxx.blogs.result.SystemResult;
 import com.mxx.blogs.service.BLogsWriteService;
 
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Service
 public class BLogsWriteServiceImpl implements BLogsWriteService {
@@ -43,6 +47,20 @@ public class BLogsWriteServiceImpl implements BLogsWriteService {
 
     @Override
     public SystemResult writeLogs(BLogsArticleWithBLOBs article, String token, HttpServletRequest request) throws Exception {
-        return null;
+        ReentrantReadWriteLock lock = BLogsWriteLock.getInstance().getLock();
+        lock.writeLock().lock();
+        try {
+            // 获取用户的信息
+            BlogsUser userInfo = (BlogsUser) request.getAttribute("user");
+            bLogsWriteAppoint.checkHandleIsLoginUser(userInfo, token);
+            bLogsWriteAppoint.beforeCreateMySqlProceeeor(article, userInfo);
+            blogsSourceMapper.insertBlogs(article);
+            bLogsWriteAppoint.deleteSuccess(userInfo, token);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            lock.writeLock().unlock();
+        }
+        return new SystemResult(BlogSysState.SUCCESS);
     }
 }

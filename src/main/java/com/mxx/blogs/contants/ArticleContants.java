@@ -18,5 +18,8 @@ public class ArticleContants {
      * 文章来源存在于缓存中的key
      */
     public static final String SOURCE_KEY = "_LOGS_SOURCE_KEY";
-
+    /**
+     * 查找用的key
+     */
+    public static final String SEARCH_TYPE_KEY = "SEARCH_TYPE_KEY";
 }

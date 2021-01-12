@@ -2,10 +2,12 @@ package com.mxx.blogs.appoint;
 
 import com.mxx.blogs.contants.ArticleContants;
 
+import com.mxx.blogs.contants.ImageContants;
 import com.mxx.blogs.dto.OpenBLogsDto;
 import com.mxx.blogs.enums.BlogSysState;
 import com.mxx.blogs.excep.CheckValueException;
 import com.mxx.blogs.locks.BLogsWriteLock;
+import com.mxx.blogs.pojo.BLogsArticleWithBLOBs;
 import com.mxx.blogs.pojo.BlogsUser;
 import com.mxx.blogs.result.SystemResult;
 import com.mxx.blogs.utils.MD5Utils;
@@ -15,17 +17,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 
 @Component
 public class BLogsWriteAppoint {
@@ -82,9 +81,21 @@ public class BLogsWriteAppoint {
     }
 
 
-    public SystemResult saveDraft(HttpServletRequest request, String token, String content) {
-
-        return null;
+    public SystemResult saveDraft(HttpServletRequest request, String token, String content) throws CheckValueException {
+        ReentrantReadWriteLock lock = BLogsWriteLock.getInstance().getLock();
+        lock.writeLock().lock();
+        try {
+            BlogsUser userInfo = (BlogsUser) request.getAttribute("user");
+            checkHandleIsLoginUser(userInfo,token);
+            //保存到草稿（缓存中）
+            redisTemplate.opsForValue().set(ArticleContants.GET_USER_LOGS_CONTENT+"#"+userInfo.getUserName()+ "#"+token,content);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }finally {
+            lock.writeLock().unlock();
+        }
+        return new SystemResult(BlogSysState.SUCCESS);
     }
 
     public SystemResult upload(HttpServletRequest request, MultipartFile file, String token) {
@@ -97,10 +108,13 @@ public class BLogsWriteAppoint {
             StringBuffer filename = new StringBuffer();
             checkUploadFile(file,filename);
 
+            MinioUtil uitl =new MinioUtil(ImageContants.FILE_SERVER_URL,ImageContants.FILE_USER_NAME,ImageContants.FILE_PASS_WORD,ImageContants.FILE_BUCKET_NAME);
+            SystemResult result = uitl.uploadFile(file,filename.toString());
+            String data = (String) result.getData();
             // 存入到图片缓存中去
-            imageAddressWriteCahce(userInfo,"");
+            imageAddressWriteCahce(userInfo,data);
             return new SystemResult(BlogSysState.SUCCESS.getVALUE(),
-                    BlogSysState.SUCCESS.getKEY(), "");
+                    BlogSysState.SUCCESS.getKEY(), data);
         }catch (Exception e){
             e.printStackTrace();
         }finally {
@@ -161,5 +175,41 @@ public class BLogsWriteAppoint {
         String originalFilename = file.getOriginalFilename();
         String fileNameEnd = originalFilename.substring(originalFilename.lastIndexOf("."));
         fileName.append(fileNamefix).append(fileNameEnd);
+    }
+
+    /**
+     * 插入数据库前 补全相应的article用户信息
+     * @param article
+     * @param userInfo
+     */
+    public void beforeCreateMySqlProceeeor(BLogsArticleWithBLOBs article, BlogsUser userInfo) {
+        article.setAuthorNumber(userInfo.getUName());
+        //查询缓存中有无用户图片
+        List<String> images = (List<String>) redisTemplate.opsForValue().get(ArticleContants.IMAGE_CACHE_KEY+userInfo.getUserName());
+        if (CollectionUtils.isEmpty(images)){
+            //没有就给个默认图片
+            article.setShowImage(USER_DEFAULT_IMAGE);
+        }else {
+            article.setShowImage(images.get(0));
+            article.setImageLists(Arrays.toString(images.toArray()));
+        }
+        article.setCreateTime(new Date());
+        article.setLike("0");
+        article.setReadSize("0");
+        article.setRetain1("1");
+    }
+
+    public void deleteSuccess(BlogsUser userInfo, String token) {
+        ReentrantReadWriteLock lock = BLogsWriteLock.getInstance().getLock();
+        lock.writeLock().lock();
+        try{
+            redisTemplate.opsForValue().set(ArticleContants.USER_LOGS_KEY+userInfo.getUserName(),null);
+            redisTemplate.opsForValue().set(ArticleContants.IMAGE_CACHE_KEY+userInfo.getUserName(),null);
+            redisTemplate.opsForValue().set(ArticleContants.GET_USER_LOGS_CONTENT+userInfo.getUserName(),null);
+        }catch (Exception e){
+            throw e;
+        }finally {
+            lock.writeLock().unlock();
+        }
     }
 }

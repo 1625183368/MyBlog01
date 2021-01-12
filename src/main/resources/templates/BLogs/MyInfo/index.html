@@ -36,7 +36,7 @@
 
         <div class="span5">
             <div style="width:470px; height: 175px; text-align: center;">
-                <img style="height: 100%; width: asdsad;" th:src="${result.data.bLogsUser.uImage}" alt="Profile Avatar"
+                <img style="height: 100%; width: 460px;" th:src="${result.data.bLogsUser.uImage}" alt="Profile Avatar"
                      class="avatar">
             </div>
 
@@ -114,13 +114,13 @@
                 </div>
             </div>
             <div class="row">
-                <div th:if="${not #lists.isEmpty(result.data.values) &&
-                #lists.size(result.data.values) > 0}">
-                    <input type="hidden" id="skillSize" th:value="${#lists.size(result.data.values)}"/>
+                <div th:if="${not #lists.isEmpty(result.data.skillvalues) &&
+                #lists.size(result.data.skillvalues) > 0}">
+                    <input type="hidden" id="skillSize" th:value="${#lists.size(result.data.skillvalues)}"/>
                     <div class="span6">
                         <div class="bars" id="bars">
                             <div th:skill_key="${value.key}" th:skill_value="${value.skillValue}"
-                                 th:each="value , index : ${result.data.values}"
+                                 th:each="value , index : ${result.data.skillvalues}"
                                  th:attr="id='bar-'+${index.index+1}">
                             </div>
                         </div>
@@ -128,7 +128,7 @@
                     <div class="span6">
                         <div class="user-tip"><img src="img/img-tip.png" alt=""/></div>
                         <div id="bars-content">
-                            <div th:each="value , index : ${result.data.values}"
+                            <div th:each="value , index : ${result.data.skillvalues}"
                                  th:attr="id='content-'+${index.index+1}" class="content">
                                 [[${value.skillDescContent}]]
                             </div>
@@ -136,8 +136,8 @@
                     </div>
                 </div>
 
-                <div th:if="${#lists.isEmpty(result.data.values) ||
-                #lists.size(result.data.values) <= 0}">
+                <div th:if="${#lists.isEmpty(result.data.skillvalues) ||
+                #lists.size(result.data.skillvalues) <= 0}">
                     你还没有设置您的专属技能点呢....<a href="JavaScript:;">前往设置</a>
                 </div>
             </div>

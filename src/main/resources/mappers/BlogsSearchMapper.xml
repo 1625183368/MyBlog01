@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mxx.blogs.mapper.BlogsSearchMapper">
+    <select id="get" resultType="com.mxx.blogs.pojo.PojoExBLogsArticle">
+        SELECT * FROM (
+            SELECT  a.blogs_id , a.blogs_title , a.update_time , a.`like`, a.author_number , a.read_size  FROM bLogs_article a
+            WHERE a.blogs_title LIKE "%"#{query}"%" AND a.if_public = 1 AND a.retain1 = 1
+            ) a1 , (
+            SELECT u_name , user_name FROM blogs_user
+            ) a2 WHERE a1.author_number = a2.user_name
+
+    </select>
+</mapper>
